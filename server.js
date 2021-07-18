@@ -44,22 +44,26 @@ const login = (request, response) => {
     let username = request.body.username
     let password = request.body.password
 
-    bcrypt.hash(password, 10, (err, hash) => {
-        pool.query(`SELECT password FROM users WHERE username='${username}'` + usern, (error, results) => {
-            if (error) {
-                response.json({message: "Server side failure!"})
-            } else {
-                results.rows.forEach(row => {
-                    if (row['password'] == hash) {
+    
+    pool.query(`SELECT password FROM users WHERE username='${username}'` + usern, (error, results) => {
+        if (error) {
+            response.json({message: "Server side failure!"})
+        } else {
+            results.rows.forEach(row => {
+                bcrypt.compare(password, row['password'], function(error, match) {
+                    if (match) {
                         response.status(200).json({message: "Success"})
-                        return 
+                        return
                     }
+                    // response == true if they match
+                    // response == false if password is wrong
                 });
-                response.status(200).json({message: "Incorrect username or password."});
-            }
-            
-        })
+            });
+            response.status(200).json({message: "Incorrect username or password."});
+        }
+        
     })
+    
 
 }
 
