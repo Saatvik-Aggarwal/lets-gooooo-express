@@ -65,5 +65,6 @@ const login = (request, response) => {
 
 module.exports = {
     getUsers,
-    signUp
+    signUp,
+    login
 }
