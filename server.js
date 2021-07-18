@@ -85,21 +85,68 @@ const getTrails = (request, response) => {
     let latitude = request.body.latitude
     let longitude = request.body.longitude
     let radius = request.body.radius
+    var pageReq;
+    if (request.body.page == null) {
+        pageReq = 0;
+    } else {
+        pageReq = request.body.page * 25;
+    }
+ 
 
     let values = [latitude + radius, latitude - radius, longitude + radius, longitude - radius]
     console.log(values);
-    pool.query(`SELECT * FROM trails WHERE latitude < $1 AND latitude > $2 AND longitude < $3 AND longitude > $4`, values, (error, results) => {
+    pool.query(`SELECT * FROM trail WHERE latitude < $1 AND latitude > $2 AND longitude < $3 AND longitude > $4`, values, (error, results) => {
         if (error) {
             response.status(200).json({message: "Failure!"})
             console.log(error)
         } else {
-            response.status(200).json({message: "Success", data: results.rows})
+            let returnData = [];
+            let i = 0; 
+            results.rows.forEach(element => {
+                if (i > pageReq && i < pageReq + 25 ) {
+                    console.log("adding, i: " + i);
+                    returnData.push({
+                        "name": element['name'],
+                        "length": element['length'],
+                        "description": element['description'],
+                        "difficulty":element['difficulty'],
+                        "thumbnail":element['thumbnail'],
+                        "distance": distance(latitude, longitude, element['latitude'], element['longitude'])
+    
+                    })
+                }
+                i += 1;
+                
+            })
+            response.status(200).json({message: "Success", data: returnData})
         }
         
     })
     
 }
 
+//:::  CREDIT: https://www.geodatasource.com                       :::
+function distance(lat1, lon1, lat2, lon2, unit) {
+	if ((lat1 == lat2) && (lon1 == lon2)) {
+		return 0;
+	}
+	else {
+		var radlat1 = Math.PI * lat1/180;
+		var radlat2 = Math.PI * lat2/180;
+		var theta = lon1-lon2;
+		var radtheta = Math.PI * theta/180;
+		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+		if (dist > 1) {
+			dist = 1;
+		}
+		dist = Math.acos(dist);
+		dist = dist * 180/Math.PI;
+		dist = dist * 60 * 1.1515;
+		if (unit=="K") { dist = dist * 1.609344 }
+		if (unit=="N") { dist = dist * 0.8684 }
+		return dist;
+	}
+}
 
 // var axios = require("axios").default;
 
