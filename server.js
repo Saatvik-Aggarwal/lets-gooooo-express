@@ -30,7 +30,7 @@ const signUp = (request, response) => {
     bcrypt.hash(password, 10, (err, hash) => {
         pool.query(`INSERT INTO users (username, password, email) VALUES ('${username}', '${hash}', '${email}')`, (error, results) => {
             if (error) {
-                response.json({message: "Failure. Duplicate username or email detected!"})
+                response.status(200).json({message: "Failure. Duplicate username or email detected!"})
             } else {
                 response.status(200).json({message: "Success"})
             }
