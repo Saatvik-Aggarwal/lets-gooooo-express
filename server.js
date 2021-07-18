@@ -20,6 +20,23 @@ const getUsers = (request, response) => {
         response.status(200).json(results.rows)
     })
 }
+
+const signUp = (request, response) => {
+    let username = request.body.username
+    let password = request.body.password
+    let email = request.body.email
+    pool.query(`INSERT INTO users (username, password, email) VALUES (${username}, ${password}, ${email})` + usern, (error, results) => {
+        if (error) {
+            response.json({message: "Failure"})
+        } else {
+            response.status(200).json({message: "Success"})
+        }
+        
+    })
+
+}
+
 module.exports = {
-    getUsers
+    getUsers,
+    signUp
 }
