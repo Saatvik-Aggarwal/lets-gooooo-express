@@ -1,5 +1,6 @@
 const fs = require('fs')
 const { Pool } = require('pg')
+const bcrypt = require('bcrypt')
 
 const pool = new Pool({
     user: 'saatvik_aggarwal',
@@ -25,13 +26,39 @@ const signUp = (request, response) => {
     let username = request.body.username
     let password = request.body.password
     let email = request.body.email
-    pool.query(`INSERT INTO users (username, password, email) VALUES (${username}, ${password}, ${email})` + usern, (error, results) => {
-        if (error) {
-            response.json({message: "Failure"})
-        } else {
-            response.status(200).json({message: "Success"})
-        }
-        
+
+    bcrypt.hash(password, 10, (err, hash) => {
+        pool.query(`INSERT INTO users (username, password, email) VALUES ('${username}', '${hash}', '${email}')` + usern, (error, results) => {
+            if (error) {
+                response.json({message: "Failure. Duplicate username or email detected!"})
+            } else {
+                response.status(200).json({message: "Success"})
+            }
+            
+        })
+    })
+
+}
+
+const login = (request, response) => {
+    let username = request.body.username
+    let password = request.body.password
+
+    bcrypt.hash(password, 10, (err, hash) => {
+        pool.query(`SELECT password FROM users WHERE username='${username}'` + usern, (error, results) => {
+            if (error) {
+                response.json({message: "Server side failure!"})
+            } else {
+                results.rows.forEach(row => {
+                    if (row['password'] == hash) {
+                        response.status(200).json({message: "Success"})
+                        return 
+                    }
+                });
+                response.status(200).json({message: "Incorrect username or password."});
+            }
+            
+        })
     })
 
 }
