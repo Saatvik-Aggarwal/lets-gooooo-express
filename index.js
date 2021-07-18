@@ -17,6 +17,7 @@ app.use(
 app.get('/users', db.getUsers)
 app.post('/signup', db.signUp)
 app.post('/login', db.login)
+app.post('/getTrails', db.getTrails)
 
 app.get('/', (request, response) => {
     response.json({info: 'HELLO BOOOMER'})
