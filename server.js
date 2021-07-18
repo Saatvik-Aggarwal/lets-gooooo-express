@@ -98,13 +98,13 @@ const getTrails = (request, response) => {
     pool.query(`SELECT * FROM trail WHERE latitude < $1 AND latitude > $2 AND longitude < $3 AND longitude > $4`, values, (error, results) => {
         if (error) {
             response.status(200).json({message: "Failure!"})
-            console.log(error)
+            //console.log(error)
         } else {
             let returnData = [];
             let i = 0; 
             results.rows.forEach(element => {
                 if (i > pageReq && i < pageReq + 25 ) {
-                    console.log("adding, i: " + i);
+                    //console.log("adding, i: " + i);
                     returnData.push({
                         "name": element['name'],
                         "length": element['length'],
