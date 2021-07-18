@@ -1,6 +1,9 @@
 const fs = require('fs')
 const { Pool } = require('pg')
 const bcrypt = require('bcrypt')
+const dotenv = require('dotenv')
+
+dotenv.config()
 
 const pool = new Pool({
     user: 'saatvik_aggarwal',
@@ -44,22 +47,32 @@ const login = (request, response) => {
     let username = request.body.username
     let password = request.body.password
 
-    
+    var setBody = false
     pool.query(`SELECT password FROM users WHERE username='${username}'`, (error, results) => {
         if (error) {
-            response.json({message: "Server side failure!"})
+            //response.json({message: "Server side failure!"})
+            throw error
         } else {
             results.rows.forEach(row => {
+                
                 bcrypt.compare(password, row['password'], function(error, match) {
-                    if (match) {
-                        response.status(200).json({message: "Success"})
-                        return
+                    //console.log(match)
+                    if (match && !setBody) {
+                        response.json({message: "Success"})
+                        setBody = true
+                    } else if (!setBody) {
+                        response.json({message: "Incorrect username or password."})
                     }
+                    // } else {
+                    //     response.json({one: password, two: row['password']})
+                    //     return
+                    // }
                     // response == true if they match
                     // response == false if password is wrong
                 });
             });
-            response.status(200).json({message: "Incorrect username or password."});
+            
+            if (results.rowCount == 0 && !setBody) response.json({message: "Incorrect username or password."});
         }
         
     })
